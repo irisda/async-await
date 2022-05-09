@@ -32,40 +32,29 @@ return response.data;
 }
 
 
-getPastExchangeRate('2022-03-16');
-getExchangeRate('EUR', 'ALL')
+
+const getCountries = async (toCurrency) => {
+    try {
+        const response = await axios.get(`https://restcountries.com/v3.1/currency/${toCurrency}`);
+        const countryNames = response.data.map(country => { return country.name });
+        return countryNames;
+    } catch (error) {
+        throw new Error(`Unable to get countries that use ${toCurrency}`)
+    }
+    }
 
 
-// (async () => {
-//    try {
-//        const directors = await fetch('https://maciejtreder.github.io/asynchronous-javascript/directors').then(response => response.json());
-//        const directorId = directors.find(director => director.name === directorToCheck).id;
+    const convertCurrency = async (fromCurrency, toCurrency, amount) => {
+        const exchangeRate = await getExchangeRate(fromCurrency, toCurrency);//this will wait until it get the final result
+       console.log(exchangeRate)
+        const countries = await getCountries(toCurrency);
+       const convertedAmount = (amount * exchangeRate).toFixed(2);
+        return `${amount} ${fromCurrency} is worth ${convertedAmount} ${toCurrency}. You can spent it in following countries ${countries}`;//1 USD is worth 119 NPR
+       }
 
-//        const movies = await fetch('https://maciejtreder.github.io/asynchronous-javascript/directors/' + directorId + '/movies').then(response => response.json());
-
-//        let reviewPromises = [];
-//        movies.forEach(movie => {
-//            reviewPromises.push(
-//                fetch('https://maciejtreder.github.io/asynchronous-javascript/movies/'+ movie.id +'/reviews')
-//                .then(response => response.json())
-//                .then(reviews => { return {title: movie.title, reviews: reviews}})
-//            );
-//        });
-
-//        let moviesRating = [];
-  
-//        for await (let reviewsSet of reviewPromises) {
-//            let aggregatedScore = 0;
-//            reviewsSet.reviews.forEach(review => aggregatedScore += review.rating);
-//            let averageScore = aggregatedScore / reviewsSet.reviews.length;
-//            moviesRating.push({title: reviewsSet.title, score: averageScore});
-//        }
-  
-//        const best = moviesRating.sort((movie1, movie2) => movie2.score - movie1.score)[0].title;
-      
-//        spinner.succeed(best + "!");
-
-//    } catch(error) {
-//        spinner.fail(error);
-//    }
-// })();
+ convertCurrency('USD', 'EUR', 1)
+ .then(message => {
+ console.log(message)
+ }).catch(err => {
+ console.error(err)
+ })
